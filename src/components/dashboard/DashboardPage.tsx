@@ -2,18 +2,16 @@ import React, { useMemo } from 'react';
 import {
   Briefcase,
   CheckCircle2,
-  DollarSign,
   CreditCard,
   AlertCircle,
   Plus,
   UserPlus,
   ArrowRight,
   TrendingUp,
-  MapPin,
   Calendar,
-  Receipt,
   Sparkles,
   Users,
+  Info,
 } from 'lucide-react';
 import { Project, Customer, Payment } from '../../types';
 import { useData } from '../../context/DataContext';
@@ -68,35 +66,40 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* 1. Welcome & Business Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-800">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30 mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            Contractor Business Workspace
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            Contractor Workspace
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">
             {settings.business_name}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1">
-            Welcome back, <strong className="text-white">{settings.owner_name}</strong>. Here is your tile business overview today.
+          <p className="text-xs sm:text-sm text-slate-300">
+            Welcome back, <strong className="text-white">{settings.owner_name}</strong> • Phone & WhatsApp: <span className="text-amber-300 font-bold">{settings.phone}</span>
           </p>
         </div>
 
-        {/* Quick CTA Buttons */}
+        {/* Primary Action Button */}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={onNewProject}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-lg shadow-indigo-600/30 transition cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-extrabold rounded-2xl shadow-xl shadow-indigo-600/30 transition transform active:scale-95 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            New Project
+            <Plus className="w-5 h-5" />
+            Create Tile Project
           </button>
-          <button
-            onClick={onNewCustomer}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold rounded-2xl border border-white/20 backdrop-blur-md transition cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4" />
-            Add Customer
-          </button>
+        </div>
+      </div>
+
+      {/* Helper Explanation Banner (Addresses User Question) */}
+      <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-slate-700 text-xs flex items-start gap-3">
+        <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-bold text-slate-900">How Ram-san Tile Work System operates:</p>
+          <p className="text-slate-600 leading-relaxed">
+            • <strong>Add Customer</strong> saves a client's profile (Name, Phone <span className="font-bold text-slate-800">0720580836</span>, Address) so you can track all jobs and balances under their name over time.<br />
+            • <strong>Create Project</strong> starts a job where you calculate tile work (Square Feet or Fixed Price), apply discounts, record customer payments, and print bills.
+          </p>
         </div>
       </div>
 

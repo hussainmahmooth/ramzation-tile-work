@@ -8,14 +8,16 @@ import {
   Calendar,
   User,
   ChevronRight,
-  Sparkles,
+  Trash2,
+  Edit,
 } from 'lucide-react';
-import { Project, Customer, ProjectStatus, PaymentStatus } from '../../types';
+import { Project, Customer } from '../../types';
 import { useData } from '../../context/DataContext';
-import { formatCurrency, formatDate } from '../../utils/calculations';
+import { formatDate } from '../../utils/calculations';
 import { ProjectStatusBadge, PaymentStatusBadge } from '../common/StatusBadge';
 import { MoneyDisplay } from '../common/MoneyDisplay';
 import { ProjectModal } from './ProjectModal';
+import { ConfirmationModal } from '../common/ConfirmationModal';
 import { EmptyState } from '../common/EmptyState';
 
 interface ProjectListPageProps {
@@ -27,11 +29,12 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
   onSelectProject,
   onSelectCustomer,
 }) => {
-  const { projects, customers, saveProject } = useData();
+  const { projects, customers, saveProject, deleteProject } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [paymentFilter, setPaymentFilter] = useState<string>('ALL');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
 
   // Filtered & Searched Projects
   const filteredProjects = useMemo(() => {
@@ -142,8 +145,7 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
             return (
               <div
                 key={project.id}
-                onClick={() => onSelectProject(project)}
-                className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 group cursor-pointer"
+                className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 group relative"
               >
                 {/* Header */}
                 <div>
@@ -154,32 +156,48 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
                     <div className="flex items-center gap-1.5">
                       <ProjectStatusBadge status={project.status} size="sm" />
                       <PaymentStatusBadge status={project.payment_status || 'Unpaid'} size="sm" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingProject(project);
+                        }}
+                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-1"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1">
-                    {project.project_name}
-                  </h3>
+                  <div onClick={() => onSelectProject(project)} className="cursor-pointer">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1">
+                      {project.project_name}
+                    </h3>
 
-                  {/* Customer link */}
-                  {customer && (
-                    <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1 font-medium">
-                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate font-semibold">{customer.name}</span>
-                      <span className="text-slate-400">({customer.phone})</span>
-                    </p>
-                  )}
+                    {/* Customer link */}
+                    {customer && (
+                      <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-1 font-medium">
+                        <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate font-semibold">{customer.name}</span>
+                        <span className="text-slate-400">({customer.phone})</span>
+                      </p>
+                    )}
 
-                  {project.location && (
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{project.location}</span>
-                    </p>
-                  )}
+                    {project.location && (
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{project.location}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Financial Summary Box */}
-                <div className="pt-3 border-t border-slate-100 bg-slate-50/70 p-3.5 rounded-2xl grid grid-cols-3 gap-2 text-center">
+                <div 
+                  onClick={() => onSelectProject(project)}
+                  className="pt-3 border-t border-slate-100 bg-slate-50/70 p-3.5 rounded-2xl grid grid-cols-3 gap-2 text-center cursor-pointer"
+                >
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Total</span>
                     <MoneyDisplay amount={project.final_amount || 0} size="sm" />
@@ -204,9 +222,12 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     {formatDate(project.start_date)}
                   </span>
-                  <span className="text-indigo-600 font-bold group-hover:translate-x-1 transition flex items-center gap-0.5">
+                  <button
+                    onClick={() => onSelectProject(project)}
+                    className="text-indigo-600 font-bold group-hover:translate-x-1 transition flex items-center gap-0.5 cursor-pointer"
+                  >
                     Open Project <ChevronRight className="w-4 h-4" />
-                  </span>
+                  </button>
                 </div>
               </div>
             );
@@ -227,6 +248,21 @@ export const ProjectListPage: React.FC<ProjectListPageProps> = ({
           onSelectProject(p);
         }}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deletingProject && (
+        <ConfirmationModal
+          isOpen={true}
+          title="Delete Project?"
+          message={`Are you sure you want to permanently delete "${deletingProject.project_name}" and its associated work items and bills? This cannot be undone.`}
+          confirmText="Delete Project"
+          onCancel={() => setDeletingProject(null)}
+          onConfirm={async () => {
+            await deleteProject(deletingProject.id);
+            setDeletingProject(null);
+          }}
+        />
+      )}
     </div>
   );
 };
